@@ -3,11 +3,13 @@ const sizeOf = require('image-size');
 const path = require('path');
 const fs = require('fs');
 
+const SUPPORTED_FORMATS = [".png", ".jpg"];
+
 function convertToPdf(dir = "./") {
 
     const directories = fs.readdirSync(dir);
 
-    directories.filter(onlyDir).forEach(directory => {
+    directories.filter(onlyDir(dir)).forEach(directory => {
 
         const namedDirectory = path.join(dir, directory);
 
@@ -25,6 +27,9 @@ function convertToPdf(dir = "./") {
 
         images.forEach(image => {
 
+            if (!SUPPORTED_FORMATS.includes(path.extname(image)))
+                return;
+
             const fullImagePath = path.join(namedDirectory, image);
 
             console.log(`Adding image ${fullImagePath}`);
@@ -32,7 +37,7 @@ function convertToPdf(dir = "./") {
             const dimension = sizeOf(fullImagePath);
 
             DOC.addPage({
-                size: [ dimension.width, dimension.height ],
+                size: [dimension.width, dimension.height],
             })
 
             DOC.image(fullImagePath, 0, 0);
@@ -41,17 +46,15 @@ function convertToPdf(dir = "./") {
 
         DOC.end();
 
-        // fs.unlink(dir);
-
     })
 
 }
 
 function onlyDir(dir) {
-    return !(path.extname(dir));
+    return function (child) {
+        return fs.statSync(path.join(dir, child)).isDirectory();
+    }
 }
-
-convertToPdf("D:\\C\\Documents\\Proyectos\\node\\h2-downloader\\downloads\\288285");
 
 module.exports = {
     convertToPdf
