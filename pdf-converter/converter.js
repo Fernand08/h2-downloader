@@ -9,21 +9,23 @@ function convertToPdf(dir = "./") {
 
     const directories = fs.readdirSync(dir);
 
-    directories.filter(onlyDir(dir)).forEach(directory => {
+    const readableDirs = directories.filter(onlyDir(dir));
+
+    const pdfName = path.join(dir, path.basename(readableDirs[0])) + ".pdf";
+
+    console.log(`Creating pdf ${pdfName}`)
+
+    const DOC = new PDFDocument({ autoFirstPage: false });
+
+    const outputStream = fs.createWriteStream(pdfName);
+
+    DOC.pipe(outputStream);
+
+    readableDirs.forEach(directory => {
 
         const namedDirectory = path.join(dir, directory);
 
         const images = fs.readdirSync(namedDirectory);
-
-        const pdfName = `${namedDirectory}.pdf`;
-
-        console.log(`Creating pdf ${pdfName}`)
-
-        const DOC = new PDFDocument({ autoFirstPage: false });
-
-        const outputStream = fs.createWriteStream(pdfName);
-
-        DOC.pipe(outputStream);
 
         images.forEach(image => {
 
@@ -44,9 +46,9 @@ function convertToPdf(dir = "./") {
 
         })
 
-        DOC.end();
-
     })
+
+    DOC.end();
 
 }
 

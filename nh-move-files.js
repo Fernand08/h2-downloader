@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const DOWNLOAD_BASE = "./downloads";
-const DESTINY = "./pdf-files";
+const DOWNLOAD_BASE = "./nh-downloads";
+const DESTINY = "./nh-pdf-files";
 
 function moveFiles() {
 
