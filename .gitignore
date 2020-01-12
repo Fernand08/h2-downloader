@@ -1,4 +1,5 @@
 node_modules
 h2-downloads/*
 nh-downloads/*
-pdf-files/*
+h2-pdf-files/*
+nh-pdf-files/*
