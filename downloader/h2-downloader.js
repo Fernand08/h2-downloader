@@ -81,8 +81,6 @@ function createFormRequest(mangaId = "", mangaPath = "") {
     return form;
 }
 
-process("ageha_no_otome");
-
 module.exports = {
     process
 }

@@ -36,7 +36,9 @@ function convertToPdf(dir = "./") {
 
             console.log(`Adding image ${fullImagePath}`);
 
-            const dimension = sizeOf(fullImagePath);
+            const imageBuffer = fs.readFileSync(fullImagePath);
+
+            const dimension = sizeOf(imageBuffer);
 
             DOC.addPage({
                 size: [dimension.width, dimension.height],
