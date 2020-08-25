@@ -14,6 +14,8 @@ function moveFiles() {
 
         const pdfName = getPdfName(directoryPath);
 
+        if (!pdfName) return;
+
         const source = path.join(directoryPath, pdfName);
 
         const target = path.join(DESTINY, pdfName);
