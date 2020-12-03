@@ -6,7 +6,7 @@ const DESTINY = "./h2-pdf-files";
 
 function moveFiles() {
 
-    const dirs = fs.readdirSync(DOWNLOAD_BASE);
+    const dirs = getDirectories(DOWNLOAD_BASE);
 
     dirs.forEach(directory => {
 
@@ -36,6 +36,16 @@ function noDirectory(parent) {
     return function (child) {
         return !(fs.statSync(path.join(parent, child)).isDirectory());
     }
+}
+
+function isDirectory(parent) {
+    return function (child) {
+        return (fs.statSync(path.join(parent, child)).isDirectory());
+    }
+}
+
+function getDirectories(parent) {
+    return fs.readdirSync(parent).filter(isDirectory(parent));   
 }
 
 moveFiles();

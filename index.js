@@ -7,7 +7,7 @@ const list = [...json.doujins];
 setTimeout(async () => {
 	for (let i = 0; i < list.length; i++) {
 		const code = list[i];
-		await processFromNH(code);
+		await processFromH2R(code);
 	}
 }, 500)
 
