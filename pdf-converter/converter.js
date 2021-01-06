@@ -7,7 +7,7 @@ const SUPPORTED_FORMATS = [".png", ".jpg"];
 
 function convertToPdf(dir = "./") {
 
-    const directories = fs.readdirSync(dir);
+    const directories = readAndOrderDirs(dir);
 
     const readableDirs = directories.filter(onlyDir(dir)).sort(sortByChapter);
 
@@ -54,23 +54,21 @@ function convertToPdf(dir = "./") {
 
 }
 
-function getFirstStringMatch(value = "") {
-    const match = value.match(/(\d|\.)+/g);
-    if (match && match.length) {
-        return match[0];
-    }
-    return 0;
+function readAndOrderDirs(dir) {
+    const directories = fs.readdirSync(dir);
+    directories.sort((dira, dirb) => {
+        const numberA = extractNumericPart(dira);
+        const numberB = extractNumericPart(dirb);
+        if (numberA < numberB) return -1;
+        if (numberA > numberB) return 1;
+        return 0;
+    });
+    return directories;
 }
 
-
-function sortByChapter(a, b) {
-    const aMatch = getFirstStringMatch(a);
-    const bMatch = getFirstStringMatch(b);
-    const firstNumber = parseInt(aMatch, 10);
-    const secondNumber = parseInt(bMatch, 10);
-    if (firstNumber > secondNumber) return 1;
-    if (secondNumber > firstNumber) return -1;
-    return 0; 
+function extractNumericPart(dir) {
+    const value = dir.replace(/\D+$/g, "").replace(/^.+_chapter_/g, "");
+    return parseFloat(value);
 }
 
 function onlyDir(dir) {

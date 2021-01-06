@@ -19,7 +19,8 @@ async function process(nukeCode) {
 
     const DOC = nhPage.window.document;
 
-    const fullDjName = DOC.querySelector("div#info>h1").innerHTML;
+    const fullDjName = DOC.querySelector("div#info>h1.title>span.pretty").textContent.trim();
+    console.log(`Downloading ${fullDjName}`)
 
     const pagesData = [...DOC.querySelectorAll("div.thumb-container>a>img")].map((img, index) => {
         const imageExt = path.extname(img.attributes.getNamedItem("data-src").value);
@@ -37,6 +38,10 @@ async function process(nukeCode) {
 
     console.log(downloadNumber);
 
+    const totalPages = pagesData.length;
+
+    console.log(`Downloading ${totalPages} pages`);
+
     for (const index in pagesData) {
         const { imageExt, pageNumber } = pagesData[index];
         const currentPage = `${pageNumber}${imageExt}`;
@@ -51,7 +56,7 @@ async function process(nukeCode) {
         if (fs.existsSync(fileName)) {
             continue;
         }
-        console.log(`Downloading image ${pageNumber} ${downloadUrl}`);
+        console.log(`Downloading image ${pageNumber} of ${totalPages} : ${downloadUrl}`);
         const response = await fetch(downloadUrl);
         if (response.status === 200) {
             const arrayBuffer = await response.arrayBuffer();

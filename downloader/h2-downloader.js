@@ -5,6 +5,7 @@ const path = require('path');
 const url = require('url');
 const { convertToPdf } = require('../pdf-converter');
 const FormData = require('form-data');
+const writeFile = require('./fileWriter');
 
 const BASE_PATH = "https://hentai2read.com/";
 const BASE_DOWNLOAD_PATH = "https://hentai2read.com/api";
@@ -23,6 +24,10 @@ async function process(doujinName = "") {
         href: e.attributes.getNamedItem("href").value
     }));
     const dwldNumber = getNumberFromValues(mappedValues);
+    if (!dwldNumber) {
+        console.log(`No chapters found for ${doujinName}`);
+        return;
+    }
     for (let i = 0; i < mappedValues.length; i++) {
         const currentUrl = mappedValues[i].href;
         console.log("Visiting " + currentUrl);
@@ -37,6 +42,7 @@ async function process(doujinName = "") {
             body: currentForm
         })
         const jsonData = await apiResponse.json();
+        if (!jsonData.images) continue;
         console.log(jsonData)
         const images = jsonData.images;
         if (images) {
@@ -99,8 +105,6 @@ function createFormRequest(mangaId = "", mangaPath = "") {
     form.append("path", mangaPath);
     return form;
 }
-
-// process("ageha_no_otome");
 
 module.exports = {
     process

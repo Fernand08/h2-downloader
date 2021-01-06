@@ -13,13 +13,15 @@ function moveFiles() {
         const directoryPath = path.join(DOWNLOAD_BASE, directory);
 
         const pdfName = getPdfName(directoryPath);
+        
+        if (!pdfName) return;
 
         const source = path.join(directoryPath, pdfName);
 
         const target = path.join(DESTINY, pdfName);
 
         fs.rename(source, target, (err) => {
-            if (err) throw err;
+            if (err) console.log(err);
         });
 
     })
