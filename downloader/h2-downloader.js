@@ -17,7 +17,8 @@ async function process(doujinName = "") {
     console.log("Visiting " + fullpathWebpage);
     const webPage = await JSDOM.fromURL(fullpathWebpage);
     const DOC = webPage.window.document;
-    const downloads = [...DOC.querySelectorAll("a.btn.btn-default.btn-circle")].reverse();
+    const downloads = getDownloadsFromPage(DOC);
+    console.log(downloads);
     const mappedValues = downloads.map((e) => ({
         href: e.attributes.getNamedItem("href").value
     }));
@@ -38,35 +39,53 @@ async function process(doujinName = "") {
         const jsonData = await apiResponse.json();
         console.log(jsonData)
         const images = jsonData.images;
-        for (let j = 0; j < images.length; j++) {
-            const currentImage = images[j];
-            const imageName = path.basename(currentImage);
-            const parentDir = path.join(DOWNLOAD_BASE, dwldNumber, `${doujinName}_chapter_${mangaPath}`);
-            if (!fs.existsSync(parentDir)) {
-                fs.mkdirSync(parentDir, { recursive: true });
+        if (images) {
+            for (let j = 0; j < images.length; j++) {
+                const currentImage = images[j];
+                const imageName = path.basename(currentImage);
+                const parentDir = path.join(DOWNLOAD_BASE, dwldNumber, `${doujinName}_chapter_${mangaPath}`);
+                if (!fs.existsSync(parentDir)) {
+                    fs.mkdirSync(parentDir, { recursive: true });
+                }
+                const fileName = path.join(parentDir, imageName);
+                if (fs.existsSync(fileName)) {
+                    console.log(`File ${fileName} already exists`);
+                    continue;
+                }
+                const currentImageCdn = BASE_CDN_PATH + currentImage;
+                console.log(`Downloading image ${(j + i)} ${currentImageCdn}`);
+                try {
+                    const imageResponse = await fetch(currentImageCdn);
+                    if (imageResponse.status === 200) {
+                        const arrayBuffer = await imageResponse.arrayBuffer();
+                        const buffer = Buffer.from(arrayBuffer);
+                        fs.writeFileSync(fileName, buffer);
+                        console.log(`Wrote ${fileName}`);
+                    }
+                } catch (err) {
+                    console.log(err);                    
+                }
             }
-            const fileName = path.join(parentDir, imageName);
-            if (fs.existsSync(fileName)) {
-                console.log(`File ${fileName} already exists`);
-                continue;
-            }
-            const currentImageCdn = BASE_CDN_PATH + currentImage;
-            console.log(`Downloading image ${(j + i)} ${currentImageCdn}`);
-            const imageResponse = await fetch(currentImageCdn);
-            if (imageResponse.status === 200) {
-                const arrayBuffer = await imageResponse.arrayBuffer();
-                const buffer = Buffer.from(arrayBuffer);
-                fs.writeFileSync(fileName, buffer);
-                console.log(`Wrote ${fileName}`);
-            }
-
         }
+        
     }
 
     const sourceDir = path.join(DOWNLOAD_BASE, dwldNumber);
     convertToPdf(sourceDir);
 
 }
+
+function getDownloadsFromPage(DOC = {}) {
+    const downloadDivs = [...DOC.querySelectorAll("li div.media")];
+    console.log(downloadDivs.map(div => div.querySelector("a.pull-left.font-w600").textContent));
+    const isTankoboun = downloadDivs.find(div => div.querySelector("a.pull-left.font-w600").textContent.match(/(Tankoubon|Takubon)/));
+    if (isTankoboun) {
+        const tankoubon = [isTankoboun.querySelector("a.btn.btn-default.btn-circle")];
+        return tankoubon;
+    }
+    const downloads = downloadDivs.map(div => div.querySelector("a.btn.btn-default.btn-circle"));
+    return downloads;
+} 
 
 function getNumberFromValues(values = []) {
     return values.map(e => e.href.match(/file=[0-9]+/g)[0].replace("file=", ""))[0];
@@ -81,7 +100,7 @@ function createFormRequest(mangaId = "", mangaPath = "") {
     return form;
 }
 
-process("ageha_no_otome");
+// process("ageha_no_otome");
 
 module.exports = {
     process

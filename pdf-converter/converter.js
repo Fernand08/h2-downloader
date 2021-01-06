@@ -9,7 +9,7 @@ function convertToPdf(dir = "./") {
 
     const directories = fs.readdirSync(dir);
 
-    const readableDirs = directories.filter(onlyDir(dir));
+    const readableDirs = directories.filter(onlyDir(dir)).sort(sortByChapter);
 
     const pdfName = path.join(dir, path.basename(readableDirs[0])) + ".pdf";
 
@@ -36,10 +36,12 @@ function convertToPdf(dir = "./") {
 
             console.log(`Adding image ${fullImagePath}`);
 
-            const dimension = sizeOf(fullImagePath);
+            const imageBuffer = fs.readFileSync(fullImagePath);
+
+            const { width, height } = sizeOf(imageBuffer);
 
             DOC.addPage({
-                size: [dimension.width, dimension.height],
+                size: [width, height],
             })
 
             DOC.image(fullImagePath, 0, 0);
@@ -50,6 +52,25 @@ function convertToPdf(dir = "./") {
 
     DOC.end();
 
+}
+
+function getFirstStringMatch(value = "") {
+    const match = value.match(/(\d|\.)+/g);
+    if (match && match.length) {
+        return match[0];
+    }
+    return 0;
+}
+
+
+function sortByChapter(a, b) {
+    const aMatch = getFirstStringMatch(a);
+    const bMatch = getFirstStringMatch(b);
+    const firstNumber = parseInt(aMatch, 10);
+    const secondNumber = parseInt(bMatch, 10);
+    if (firstNumber > secondNumber) return 1;
+    if (secondNumber > firstNumber) return -1;
+    return 0; 
 }
 
 function onlyDir(dir) {
