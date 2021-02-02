@@ -3,9 +3,9 @@ const { JSDOM } = require('jsdom');
 const fetch = require('node-fetch');
 const path = require('path');
 const url = require('url');
+const util = require('util');
 const { convertToPdf } = require('../pdf-converter');
 const FormData = require('form-data');
-const writeFile = require('./fileWriter');
 
 const BASE_PATH = "https://hentai2read.com/";
 const BASE_DOWNLOAD_PATH = "https://hentai2read.com/api";
@@ -62,7 +62,7 @@ async function process(doujinName = "") {
             if (imageResponse.status === 200) {
                 const arrayBuffer = await imageResponse.arrayBuffer();
                 const buffer = Buffer.from(arrayBuffer);
-                await writeFile(fileName, buffer);
+                await saveFileOnPromise(fileName, buffer);
                 console.log(`Wrote ${fileName}`);
             } else {
                 console.log(`Failed downloading ${currentImageCdn}`);
@@ -77,9 +77,20 @@ async function process(doujinName = "") {
 
 }
 
+
+function saveFileOnPromise(fileName, content) {
+    return new Promise((resolve, reject) => {
+        fs.writeFile(fileName, content, (err) => {
+            if (err) reject(err);
+            resolve();
+        });
+    });
+}
+
+
 function getDownloads(DOC) {
     const media = [...DOC.querySelectorAll("div.media")];
-    const tankoubon = media.find(t => t.textContent.toLowerCase().includes("tankoubon"));
+    const tankoubon = media.find(t => hasAntology(t.textContent));
     if (tankoubon) {
         return [tankoubon.querySelector("a.btn.btn-default.btn-circle")];
     }
