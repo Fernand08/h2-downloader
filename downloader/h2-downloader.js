@@ -18,7 +18,8 @@ async function process(doujinName = "") {
     console.log("Visiting " + fullpathWebpage);
     const webPage = await JSDOM.fromURL(fullpathWebpage);
     const DOC = webPage.window.document;
-    const downloads = getDownloads(DOC);
+    const downloads = getDownloadsFromPage(DOC);
+    console.log(downloads);
     const mappedValues = downloads.map((e) => ({
         href: e.attributes.getNamedItem("href").value
     }));
@@ -68,8 +69,8 @@ async function process(doujinName = "") {
                 console.log(`Failed downloading ${currentImageCdn}`);
                 throw new Error(`Failed downloading ${currentImageCdn}`)
             }
-
         }
+        
     }
 
     const sourceDir = path.join(DOWNLOAD_BASE, dwldNumber);
@@ -94,14 +95,9 @@ function getDownloads(DOC) {
     if (tankoubon) {
         return [tankoubon.querySelector("a.btn.btn-default.btn-circle")];
     }
-    return media.map(m => m.querySelector("a.btn.btn-default.btn-circle")).reverse();
-}
-
-
-function hasAntology(name) {
-    return name.toLowerCase().includes("tankoubon") || name.toLowerCase().includes("takubon")
-}
-
+    const downloads = downloadDivs.map(div => div.querySelector("a.btn.btn-default.btn-circle"));
+    return downloads;
+} 
 
 function getNumberFromValues(values = []) {
     return values.map(e => e.href.match(/file=[0-9]+/g)[0].replace("file=", ""))[0];

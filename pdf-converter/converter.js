@@ -9,7 +9,7 @@ function convertToPdf(dir = "./") {
 
     const directories = readAndOrderDirs(dir);
 
-    const readableDirs = directories.filter(onlyDir(dir));
+    const readableDirs = directories.filter(onlyDir(dir)).sort(sortByChapter);
 
     const pdfName = path.join(dir, path.basename(readableDirs[0])) + ".pdf";
 
@@ -38,10 +38,10 @@ function convertToPdf(dir = "./") {
 
             const imageBuffer = fs.readFileSync(fullImagePath);
 
-            const dimension = sizeOf(imageBuffer);
+            const { width, height } = sizeOf(imageBuffer);
 
             DOC.addPage({
-                size: [dimension.width, dimension.height],
+                size: [width, height],
             })
 
             DOC.image(fullImagePath, 0, 0);
